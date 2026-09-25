@@ -1,0 +1,103 @@
+name: OmniNX+ Daily Plan
+
+on:
+  schedule:
+    - cron: "0 17 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  daily-plan:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Build daily plan
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -e
+
+          DATE="$(date -u +%Y-%m-%d)"
+          TIME="$(date -u +%H:%M UTC)"
+
+          mkdir -p daily-plans
+
+          PRETENDO="$(curl -fsSL -H "Accept: application/vnd.github+json" \
+            "https://api.github.com/orgs/PretendoNetwork/repos?per_page=100&sort=updated" |
+            jq -r 'map(select(.archived == false)) | sort_by(.pushed_at) | reverse | .[0].full_name')"
+
+          NIKLAS="$(curl -fsSL -H "Accept: application/vnd.github+json" \
+            "https://api.github.com/users/Woody-NX/repos?per_page=100&sort=updated" |
+            jq -r 'map(select(.archived == false)) | sort_by(.pushed_at) | reverse | .[0].full_name')"
+
+          [ -n "$PRETENDO" ] || PRETENDO="PretendoNetwork/unknown"
+          [ -n "$NIKLAS" ] || NIKLAS="Woody-NX/unknown"
+
+          cat > "daily-plans/$DATE.md" <<EOF
+# OmniNX+ Tagesplan – $DATE
+
+**Agent-1 Ablauf:** Pretendo prüfen → NiklasCFW prüfen → relevante Änderungen für WorldNX-OmniNX prüfen → Tagesstatus dokumentieren.
+
+## 1. Pretendo Network
+
+Repository des Tages: **$PRETENDO**
+
+Quelle:
+https://github.com/$PRETENDO
+
+## 2. NiklasCFW
+
+Repository des Tages: **$NIKLAS**
+
+Quelle:
+https://github.com/$NIKLAS
+
+## 3. OmniNX+
+
+- Relevante Änderungen für die WorldNX-OmniNX-Basis prüfen.
+- Original-OmniNX-Look beibehalten.
+- Keine fremden Firmware-/Payload-Binaries automatisch übernehmen.
+- Server-/Quellcode-Änderungen nur nach Prüfung integrieren.
+- Keine echten Shop-/Server-URLs direkt in den Quellcode übernehmen.
+
+## 4. Automatischer Lauf
+
+- Datum: $DATE
+- Zeit: $TIME
+- Status: Tagesplan automatisch durch GitHub Actions erzeugt.
+
+## 5. Hinweis
+
+Dieser Workflow erstellt und dokumentiert den Tagesplan. Er kopiert nicht automatisch fremden Code in WorldNX-OmniNX.
+EOF
+
+          cat > DAILY_PLAN.md <<EOF
+# OmniNX+ Daily Agent Plan
+
+Dieser Plan basiert auf dem Agent-1-Ablauf.
+
+**Letzter automatischer Lauf:** $DATE $TIME
+
+- Pretendo-Repository: $PRETENDO
+- NiklasCFW-Repository: $NIKLAS
+- WorldNX-OmniNX: Änderungen prüfen und dokumentieren
+- Automatisierung: GitHub Actions
+
+Die vollständigen Tagesberichte liegen unter `daily-plans/`.
+EOF
+
+      - name: Commit daily plan
+        run: |
+          git config user.name "OmniNX+ Daily Agent"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add DAILY_PLAN.md daily-plans/
+          if git diff --cached --quiet; then
+            echo "Keine Änderungen."
+            exit 0
+          fi
+          git commit -m "chore: update OmniNX+ daily plan"
+          git push
