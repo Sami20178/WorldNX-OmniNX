@@ -1,0 +1,37 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>OmniNX Switch Virtual Machine</title>
+<style>
+*{box-sizing:border-box}body{margin:0;background:#090a0d;color:#f5f5f5;font-family:system-ui,sans-serif;min-height:100vh}
+main{max-width:1000px;margin:auto;padding:28px}.top{display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid #2b2d33;padding-bottom:18px}
+.brand{font-size:24px;font-weight:700}.badge{font-size:12px;padding:7px 10px;border:1px solid #3a3d44;border-radius:999px}
+.screen{margin-top:28px;min-height:520px;border:1px solid #30333a;border-radius:18px;background:#111319;display:flex;align-items:center;justify-content:center;text-align:center;box-shadow:0 20px 60px #0008}
+.content{max-width:650px;padding:40px}h1{font-size:38px;margin:0 0 12px}p{color:#b8bbc3;line-height:1.6}
+.buttons{display:flex;gap:12px;justify-content:center;flex-wrap:wrap;margin-top:26px}
+button{border:1px solid #41444c;background:#1b1d23;color:white;border-radius:10px;padding:12px 18px;font-size:15px;cursor:pointer}
+button:hover{background:#252831}.status{margin-top:22px;font-size:13px;color:#9da1aa}footer{padding:18px 0;color:#6f737d;font-size:12px;text-align:center}
+</style>
+</head>
+<body>
+<main>
+<header class="top"><div class="brand">OmniNX</div><div class="badge" id="state">VM: starting…</div></header>
+<section class="screen"><div class="content">
+<h1>Switch Virtual Machine</h1>
+<p>OmniNX Server stellt hier die zentrale Web-Oberfläche für die Switch-VM-Simulation bereit. Diese Seite ist der Einstiegspunkt des Node-Servers.</p>
+<div class="buttons"><button id="boot">VM starten</button><button id="reset">VM zurücksetzen</button></div>
+<div class="status" id="details">Verbinde mit dem VM-Dienst…</div>
+</div></section>
+<footer>WorldNX-OmniNX · Switch VM interface</footer>
+</main>
+<script>
+const state=document.getElementById("state"),details=document.getElementById("details");
+fetch("/api/status").then(r=>r.json()).then(d=>{state.textContent="VM: "+d.status;details.textContent=d.service+" · "+d.mode})
+.catch(()=>{state.textContent="VM: offline";details.textContent="Der Node-Dienst ist nicht erreichbar."});
+document.getElementById("boot").onclick=()=>{state.textContent="VM: running";details.textContent="Virtuelle Switch-Umgebung ist gestartet."};
+document.getElementById("reset").onclick=()=>{state.textContent="VM: ready";details.textContent="Virtuelle Umgebung wurde zurückgesetzt."};
+</script>
+</body>
+</html>
