@@ -1,0 +1,3 @@
+[submodule "server/niklascfw-pack"]
+	path = server/niklascfw-pack
+	url = https://github.com/Woody-NX/NiklasCFW_Pack.git
