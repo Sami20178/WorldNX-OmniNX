@@ -1,0 +1,51 @@
+name: Daily OmniNX+ Plan
+
+on:
+  schedule:
+    - cron: '0 8 * * *'
+  workflow_dispatch:
+
+permissions:
+  issues: write
+  contents: read
+
+jobs:
+  daily-plan:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Create daily planning issue
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const date = new Date().toISOString().slice(0, 10);
+            const title = `Daily OmniNX+ review - ${date}`;
+            const body = [
+              `## Daily OmniNX+ review - ${date}`,
+              '',
+              '- [ ] Review Pretendo Network progress and relevant repositories',
+              '- [ ] Review relevant NiklasCFW repositories',
+              '- [ ] Check licenses, attribution, and compatibility',
+              '- [ ] Compare findings with the current OmniNX+ server foundation',
+              '- [ ] Select one small, testable integration task',
+              '- [ ] Add tests or validation',
+              '- [ ] Update the integration status and open/update a pull request',
+              '',
+              'This issue is a planning reminder. It does not automatically copy or merge upstream code.'
+            ].join('\\n');
+
+            const existing = await github.rest.issues.listForRepo({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              state: 'open',
+              per_page: 100
+            });
+
+            if (!existing.data.some(issue => issue.title === title)) {
+              await github.rest.issues.create({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                title,
+                body,
+                labels: ['planning']
+              });
+            }
