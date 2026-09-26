@@ -35,4 +35,4 @@ Jeden Tag wird dieser Ablauf ausgeführt:
 
 Der heutige Lauf wird durch GitHub Actions automatisch erzeugt und in diesem Repository dokumentiert.
 
-> Hinweis: GitHub Actions kann den Tageslauf automatisch starten. ChatGPT selbst läuft nicht dauerhaft im Hintergrund; die Automatisierung läuft innerhalb von GitHub Actions.
+ 
