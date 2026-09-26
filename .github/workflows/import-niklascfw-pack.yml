@@ -45,4 +45,5 @@ jobs:
             exit 0
           fi
           git commit -m "Import NiklasCFW_Pack into sources/niklascfw-pack"
-          git push origin HEAD:main
+          git push --force-with-lease origin HEAD:import/niklascfw-pack
+          gh pr create --base main --head import/niklascfw-pack --title "Import NiklasCFW_Pack" --body "Imports the NiklasCFW_Pack folders and files into sources/niklascfw-pack/." || true
