@@ -14,9 +14,15 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout WorldNX-OmniNX
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
         with:
-          fetch-depth: 1
+          fetch-depth: 0
+
+      - name: Sync with latest main
+        run: |
+          git fetch origin main
+          git reset --hard origin/main
+          git clean -fd
 
       - name: Clone NiklasCFW_Pack
         run: |
@@ -33,8 +39,10 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git fetch origin main
-          git rebase origin/main
           git add sources/niklascfw-pack
-          git commit -m "Import NiklasCFW_Pack into sources/niklascfw-pack" || exit 0
+          if git diff --cached --quiet; then
+            echo "No import changes."
+            exit 0
+          fi
+          git commit -m "Import NiklasCFW_Pack into sources/niklascfw-pack"
           git push origin HEAD:main
