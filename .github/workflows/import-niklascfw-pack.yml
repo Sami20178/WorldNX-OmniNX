@@ -1,0 +1,38 @@
+name: Import NiklasCFW Pack
+
+on:
+  push:
+    paths:
+      - ".github/workflows/import-niklascfw-pack.yml"
+      - "sources/niklascfw-pack/.import-trigger"
+
+permissions:
+  contents: write
+
+jobs:
+  import:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout WorldNX-OmniNX
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+
+      - name: Clone NiklasCFW_Pack
+        run: |
+          git clone --depth 1 https://github.com/Woody-NX/NiklasCFW_Pack.git /tmp/NiklasCFW_Pack
+
+      - name: Copy pack
+        run: |
+          rm -rf sources/niklascfw-pack
+          mkdir -p sources/niklascfw-pack
+          cp -a /tmp/NiklasCFW_Pack/. sources/niklascfw-pack/
+          rm -rf sources/niklascfw-pack/.git
+
+      - name: Commit imported pack
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add sources/niklascfw-pack
+          git commit -m "Import NiklasCFW_Pack into sources/niklascfw-pack" || exit 0
+          git push
