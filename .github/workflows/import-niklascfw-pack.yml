@@ -8,20 +8,22 @@ on:
 
 permissions:
   contents: write
+  pull-requests: write
 
 jobs:
   import:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout WorldNX-OmniNX
+      - name: Checkout existing import branch
         uses: actions/checkout@v5
         with:
+          ref: omninx-server-foundation
           fetch-depth: 0
 
-      - name: Sync with latest main
+      - name: Sync existing branch
         run: |
-          git fetch origin main
-          git reset --hard origin/main
+          git fetch origin omninx-server-foundation
+          git reset --hard origin/omninx-server-foundation
           git clean -fd
 
       - name: Clone NiklasCFW_Pack
@@ -35,15 +37,24 @@ jobs:
           cp -a /tmp/NiklasCFW_Pack/. sources/niklascfw-pack/
           rm -rf sources/niklascfw-pack/.git
 
-      - name: Commit imported pack
+      - name: Commit import
         run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git config user.name "Sami20178"
+          git config user.email "263020164+Sami20178@users.noreply.github.com"
           git add sources/niklascfw-pack
           if git diff --cached --quiet; then
             echo "No import changes."
             exit 0
           fi
           git commit -m "Import NiklasCFW_Pack into sources/niklascfw-pack"
-          git push --force-with-lease origin HEAD:import/niklascfw-pack
-          gh pr create --base main --head import/niklascfw-pack --title "Import NiklasCFW_Pack" --body "Imports the NiklasCFW_Pack folders and files into sources/niklascfw-pack/." || true
+          git push origin HEAD:omninx-server-foundation
+
+      - name: Create or reuse pull request
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          if gh pr list --base main --head omninx-server-foundation --state open --json number --jq 'length' | grep -q '^0$'; then
+            gh pr create --base main --head omninx-server-foundation --title "Import NiklasCFW_Pack" --body "Imports the NiklasCFW_Pack folders and files into sources/niklascfw-pack/."
+          else
+            echo "Import pull request already exists."
+          fi
